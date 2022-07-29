@@ -1,0 +1,50 @@
+{
+    "pipeline": [
+        {
+"bounds": "([-12399000, -12400000], [4113000, 4120000])",
+"filename": "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/AZ_USFS_3DEP_Processing_2019",
+"type": "readers.ept",
+"tag": "readdata"
+        },
+        {
+            "limits": "Classification![7:7]",
+            "type": "filters.range",
+            "tag": "nonoise"
+        },
+        {
+            "assignment": "Classification[:]=0",
+            "tag": "wipeclasses",
+            "type": "filters.assign"
+        },
+        {
+            "out_srs": "EPSG:26912",
+            "tag": "reprojectUTM",
+            "type": "filters.reprojection"
+        },
+        {
+            "tag": "groundify",
+            "type": "filters.smrf"
+        },
+        {
+            "limits": "Classification[2:2]",
+            "type": "filters.range",
+            "tag": "classify"
+        },
+        {
+            "filename": "mahan.copc.laz",
+            "inputs": [ "classify" ],
+            "tag": "writerscopc",
+            "type": "writers.copc"
+        },
+        {
+            "filename": "mahan.tif",
+            "gdalopts": "tiled=yes,     compress=deflate",
+            "inputs": [ "writerscopc" ],
+            "nodata": -9999,
+            "output_type": "idw",
+            "resolution": 0.3333,
+            "type": "writers.gdal",
+            "window_size": 6
+        }
+    ]
+}
